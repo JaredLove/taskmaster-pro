@@ -213,25 +213,19 @@ $(".card .list-group").sortable({
   helper: "clone",
   // The activate and deactivate events trigger once for all connected lists as soon as dragging starts and stops.
   activate: function(event) {
-    console.log("activate", this);
     $(this).addClass('dropover');
     $('.bottom-trash').addClass('bottom-trash-drag');
   },
   deactivate: function(event) {
-    console.log("deactivate", this);
     $(this).removeClass('dropover');
     $('.bottom-trash').removeClass('bottom-trash-drag');
   },
   // The over and out events trigger when a dragged item enters or leaves a connected list.
   over: function(event) {
-    console.log("over", event.target);
-    $(event.target).addClass('dropover-actvie');
-    $('.bottom-trash').addClass('bottom-trash-active');
+    $(event.target).addClass('dropover-active');
   },
   out: function(event) {
-    console.log("out", event.target);
-    $(event.target).removeClass('dropover-actvie');
-    $('.bottom-trash').removeClass('bottom-trash-active');
+    $(event.target).removeClass('dropover-active');
   },
   // The update event triggers when the contents of a list have changed (e.g., the items were re-ordered, an item was removed, or an item was added).
   update: function(event) {
@@ -242,25 +236,21 @@ $(".card .list-group").sortable({
     // children() method returns an array of the list element's children (the <li> elements, labeled as li.list-group-item).
     //jQuery's each() method will run a callback function for every item/element in the array. It's another form of looping, 
     //except that a function is now called on each loop iteration. The potentially confusing part of this code is the second use of $(this). Inside the callback function, $(this) actually refers to the child element at that index.
-    $(this).children().each(function() {
-      // Inside the .each() loop, it selects the <p> element within the current child element, extracts the text content, and removes any leading or trailing whitespace. The result is stored in the text variable.
-      let text = $(this)
-        .find("p")
-        .text()
-        .trim();
-//Similarly, it selects the <span> element within the current child element, extracts the text content, and trims any leading or trailing whitespace. The result is stored in the date variable.
-      let date = $(this)
-        .find("span")
-        .text()
-        .trim();
-
-      // add task data to the temp array as an object
-      // After extracting both the text and date values from the current child element, it creates an object with these properties and pushes this object into the tempArr array. This effectively constructs an array of objects, where each object contains text and date properties corresponding to the data extracted from child elements.
-      tempArr.push({
-        text: text,
-        date: date
+    $(this)
+      .children()
+      .each(function() {
+        // save values in temp array
+        tempArr.push({
+          text: $(this)
+            .find("p")
+            .text()
+            .trim(),
+          date: $(this)
+            .find("span")
+            .text()
+            .trim()
+        });
       });
-    });
 
     // trim down list's ID to match object property
     // This line extracts the id attribute of the element referred to by $(this) and then uses .replace("list-", "") to remove the string "list-" from the id. The result is stored in the variable arrName.
@@ -271,8 +261,6 @@ $(".card .list-group").sortable({
     // update array on tasks object and save
     tasks[arrName] = tempArr;
     saveTasks();
-
-    console.log(tempArr);
   }
 });
 
@@ -282,12 +270,15 @@ $("#trash").droppable({
   drop: function(event, ui) {
     console.log("drop");
     ui.draggable.remove();
+    $(".bottom-trash").removeClass("bottom-trash-active");
   },
   over: function(event, ui) {
     console.log("over");
+    $(".bottom-trash").addClass("bottom-trash-active");
   },
   out: function(event, ui) {
     console.log("out");
+    $(".bottom-trash").removeClass("bottom-trash-active");
   }
 });
 
@@ -305,7 +296,6 @@ const auditTask = function(taskEl) {
   // get date from task element
   const date = $(taskEl).find("span").text().trim();
   // ensure it worked
-  console.log(date); 
 
   // convert to moment object at 5:00pm
   const time = moment(date, "L").set("hour", 17);
@@ -321,7 +311,7 @@ const auditTask = function(taskEl) {
   }  else if (Math.abs(moment().diff(time, "days")) <= 2) {
     $(taskEl).addClass("list-group-item-warning");
   }
-  console.log(taskEl);
+
 };
 
 // we loop over every task on the page with a class of list-group-item and execute the auditTask() function to check the due date of each one.
